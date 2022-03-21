@@ -1,7 +1,5 @@
 import 'package:semaphore/lock.dart';
 
-import '../lock_extensions.dart';
-
 /// キャッシュ処理をサポートするWrapper Object.
 ///
 /// NOTE.
@@ -23,6 +21,9 @@ class Cache<T> {
   @override
   int get hashCode => throw Exception('Invalid access(equals)');
 
+  /// すでに値を生成済みであればtrue.
+  bool get hasValue => _hasValue;
+
   @Deprecated('DO NOT ACCESS THIS')
   @override
   bool operator ==(Object other) => throw Exception('Invalid access(equals)');
@@ -40,30 +41,31 @@ class Cache<T> {
   /// キャッシュを取得し、キャッシュが未生成であれば [lazy] 関数を通じてキャッシュを生成する.
   /// このメソッドは [get] と排他仕様であり、同時に実行された場合の動作保証を行わない.
   /// [withLock] がtrueの場合、内部では非同期の排他制御が行われる.
-  Future<T> getAsync(Future<T> Function() lazy, {bool withLock = true}) {
+  Future<T> getAsync(Future<T> Function() lazy, {bool withLock = true}) async {
     // 先行返却
     if (_hasValue) {
       return Future.value(_value);
     }
 
-    // 生成関数.
-    // Lock有無については [withLock] 引数をチェックする
-    Future<T> lambda() async {
+    if (withLock) {
+      _lock ??= Lock();
+      await _lock!.acquire();
+    }
+
+    try {
       if (_hasValue) {
         return _value;
       }
 
       _value = await lazy();
       _hasValue = true;
-      return _value;
+    } finally {
+      if (withLock) {
+        _lock!.release();
+      }
     }
 
-    if (withLock) {
-      _lock ??= Lock();
-      return _lock!.withLock(lambda);
-    } else {
-      return lambda();
-    }
+    return _value;
   }
 
   @Deprecated('DO NOT ACCESS THIS')

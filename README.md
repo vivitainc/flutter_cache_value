@@ -1,22 +1,15 @@
-stdlib_plus
-
 ## Features
 
-Flutterの標準ライブラリおよびデファクトスタンダードライブラリ用の拡張関数や
-よく使用する処理を提供する.
+On-Memory cacheオブジェクトを提供する.
 
-## Getting started
-
-TODO.
-
-```yaml
-# pubspec.yaml
-```
+Cacheはあくまで時間のかかる処理の結果を保持する程度の利用を想定されるため、
+hashやequalsを実行すると例外を投げる.
 
 ## Usage
 
-TODO.
-
 ```dart
+final cache = Cache<int>();
+final value = await cache.getAsync(() async {
+    return heavyFunction();
+});
 ```
-## Additional information
