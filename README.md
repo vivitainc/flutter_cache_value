@@ -1,3 +1,5 @@
+[![Github Actions](https://github.com/vivitainc/flutter_cache_value/actions/workflows/flutter-package-test.yaml/badge.svg)](https://github.com/vivitainc/flutter_cache_value/actions/workflows/flutter-package-test.yaml)
+
 ## Features
 
 On-Memory cacheオブジェクトを提供する.
